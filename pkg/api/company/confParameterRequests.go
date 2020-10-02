@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/erply/api-go-wrapper/internal/common"
 	erro "github.com/erply/api-go-wrapper/internal/errors"
+	"net/http"
 )
 
 func (cli *Client) GetConfParameters(ctx context.Context) (*ConfParameter, error) {
@@ -28,4 +29,14 @@ func (cli *Client) GetConfParameters(ctx context.Context) (*ConfParameter, error
 	}
 
 	return &res.ConfParameters[0], nil
+}
+
+//GetCustomConfParameters will not decode the response body offering to do that in the application code.
+//this way custom configuration parameters can be fetched
+func (cli *Client) GetCustomConfParameters(ctx context.Context) (*http.Response, error) {
+	resp, err := cli.SendRequest(ctx, "getConfParameters", map[string]string{})
+	if err != nil {
+		return nil, erro.NewFromError("GetConfParameters request failed", err)
+	}
+	return resp, nil
 }

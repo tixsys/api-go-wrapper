@@ -12,6 +12,7 @@ type (
 		WarehouseName string `json:"warehouseName"`
 		Added         uint64 `json:"added"`
 		LastModified  uint64 `json:"lastModified"`
+		StoreHours    string `json:"storeHours"`
 	}
 
 	GetPointsOfSaleResponse struct {
