@@ -22,3 +22,19 @@ func (cli *Client) GetPointsOfSale(ctx context.Context, filters map[string]strin
 	}
 	return res.PointsOfSale, nil
 }
+
+// GetDayClosings will retrieve a log of POS day openings and closings according to specified filters.
+func (cli *Client) GetDayClosings(ctx context.Context, filters map[string]string) ([]DayClosing, error) {
+	resp, err := cli.SendRequest(ctx, "getDayClosings", filters)
+	if err != nil {
+		return nil, err
+	}
+	var res GetDayClosingsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+		return nil, erro.NewFromError("failed to unmarshal GetDayClosingsResponse", err)
+	}
+	if !common.IsJSONResponseOK(&res.Status) {
+		return nil, erro.NewFromResponseStatus(&res.Status)
+	}
+	return res.DayClosings, nil
+}
