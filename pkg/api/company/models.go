@@ -45,6 +45,7 @@ type (
 		DefaultLanguage      string `json:"default_language"`
 		Country              string `json:"country"`
 		ReceiptFooter        string `json:"receipt_footer"`
+		DefaultCurrency      string `json:"default_currency"`
 	}
 	//GetConfParametersResponse ...
 	GetConfParametersResponse struct {
