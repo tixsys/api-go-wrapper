@@ -48,4 +48,25 @@ type (
 			EmployeeID int `json:"employeeID,omitempty"`
 		} `json:"employees,omitempty"`
 	}
+
+	GetCashInsResponse struct {
+		Status  common2.Status `json:"status"`
+		CashIns []CashIn       `json:"records"`
+	}
+
+	CashIn struct {
+		TransactionID   int                    `json:"transactionID,omitempty"`
+		Sum             float64                `json:"sum,omitempty"`
+		CurrencyCode    string                 `json:"currencyCode,omitempty"`
+		CurrencyRate    float64                `json:"currencyRate,omitempty"`
+		WarehouseID     int                    `json:"warehouseID,omitempty"`
+		WarehouseName   string                 `json:"warehouseName,omitempty"`
+		PointOfSaleID   int                    `json:"pointOfSaleID,omitempty"`
+		PointOfSaleName string                 `json:"pointOfSaleName,omitempty"`
+		EmployeeID      int                    `json:"employeeID,omitempty"`
+		EmployeeName    string                 `json:"employeeName,omitempty"`
+		DateTime        string                 `json:"dateTime,omitempty"`
+		Comment         string                 `json:"comment,omitempty"`
+		Attributes      []common2.ObjAttribute `json:"attributes,omitempty"`
+	}
 )

@@ -38,3 +38,19 @@ func (cli *Client) GetDayClosings(ctx context.Context, filters map[string]string
 	}
 	return res.DayClosings, nil
 }
+
+// GetCashIns will retrieve POS cash drops and cash payouts according to specified filters.
+func (cli *Client) GetCashIns(ctx context.Context, filters map[string]string) ([]CashIn, error) {
+	resp, err := cli.SendRequest(ctx, "getCashIns", filters)
+	if err != nil {
+		return nil, err
+	}
+	var res GetCashInsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+		return nil, erro.NewFromError("failed to unmarshal GetCashInsResponse", err)
+	}
+	if !common.IsJSONResponseOK(&res.Status) {
+		return nil, erro.NewFromResponseStatus(&res.Status)
+	}
+	return res.CashIns, nil
+}
