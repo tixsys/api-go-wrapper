@@ -69,4 +69,16 @@ type (
 		Comment         string                 `json:"comment,omitempty"`
 		Attributes      []common2.ObjAttribute `json:"attributes,omitempty"`
 	}
+
+	GetReasonCodesResponse struct {
+		Status      common2.Status `json:"status"`
+		ReasonCodes []ReasonCode   `json:"records"`
+	}
+
+	ReasonCode struct {
+		ReasonID int    `json:"reasonID,omitempty"`
+		Name     string `json:"name,omitempty"`
+		Purpose  string `json:"purpose,omitempty"`
+		Code     string `json:"code,omitempty"`
+	}
 )

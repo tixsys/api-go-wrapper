@@ -54,3 +54,19 @@ func (cli *Client) GetCashIns(ctx context.Context, filters map[string]string) ([
 	}
 	return res.CashIns, nil
 }
+
+// GetReasonCodes will get a list of reason codes. according to specified filters.
+func (cli *Client) GetReasonCodes(ctx context.Context, filters map[string]string) ([]ReasonCode, error) {
+	resp, err := cli.SendRequest(ctx, "getReasonCodes", filters)
+	if err != nil {
+		return nil, err
+	}
+	var res GetReasonCodesResponse
+	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+		return nil, erro.NewFromError("failed to unmarshal getReasonCodes", err)
+	}
+	if !common.IsJSONResponseOK(&res.Status) {
+		return nil, erro.NewFromResponseStatus(&res.Status)
+	}
+	return res.ReasonCodes, nil
+}
