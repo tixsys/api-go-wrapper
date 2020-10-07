@@ -26,13 +26,13 @@ func main() {
 		ResponseHeaderTimeout: connectionTimeout,
 	}
 	httpCl := &http.Client{Transport: transport}
-
-	sessionKey, err := auth.VerifyUser(*username, *password, *clientCode, http.DefaultClient)
+	ctx := context.Background()
+	session, err := auth.VerifyUserFull(ctx, *username, *password, *clientCode, map[string]string{}, http.DefaultClient)
 	if err != nil {
 		panic(err)
 	}
 
-	apiClient, err := api.NewClient(sessionKey, *clientCode, httpCl)
+	apiClient, err := api.NewClient(session.SessionKey, *clientCode, httpCl)
 	if err != nil {
 		panic(err)
 	}

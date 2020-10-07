@@ -14,6 +14,8 @@ import (
 )
 
 //VerifyUser will give you session key
+//
+//Deprecated
 func VerifyUser(username, password, clientCode string, client *http.Client) (string, error) {
 	requestUrl := fmt.Sprintf(common.BaseUrl, clientCode)
 	params := url.Values{}
@@ -45,7 +47,9 @@ func VerifyUser(username, password, clientCode string, client *http.Client) (str
 	return res.Records[0].SessionKey, nil
 }
 
-//pass filters (including clientCode and sessionKey), pass client code, context and http client
+//VerifyUserV2 - pass filters (including clientCode and sessionKey), pass client code, context and http client
+//
+//Deprecated
 func VerifyUserV2(ctx context.Context, filters map[string]string, clientCode string, cli *http.Client) (string, error) {
 	requestUrl := fmt.Sprintf(common.BaseUrl, clientCode)
 	params := url.Values{}
@@ -73,35 +77,6 @@ func VerifyUserV2(ctx context.Context, filters map[string]string, clientCode str
 		return "", erro.NewFromResponseStatus(&res.Status)
 	}
 	return res.Records[0].SessionKey, nil
-}
-
-func VerifyUserV3(ctx context.Context, filters map[string]string, clientCode string, cli *http.Client) (*VerifyUserResponse, error) {
-	requestUrl := fmt.Sprintf(common.BaseUrl, clientCode)
-	params := url.Values{}
-	for k, v := range filters {
-		params.Add(k, v)
-	}
-	params.Add("request", "verifyUser")
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestUrl, nil)
-	if err != nil {
-		return nil, erro.NewFromError("failed to build HTTP request", err)
-	}
-	req.URL.RawQuery = params.Encode()
-	req.Header.Add("Accept", "application/json")
-	resp, err := cli.Do(req)
-
-	if err != nil {
-		return nil, erro.NewFromError("failed to build VerifyUser request", err)
-	}
-	res := &VerifyUserResponse{}
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		return nil, erro.NewFromError("failed to decode VerifyUserResponse", err)
-	}
-
-	if res.Status.ErrorCode != 0 {
-		return nil, erro.NewFromResponseStatus(&res.Status)
-	}
-	return res, nil
 }
 
 //VerifyUserFull executes the Erply API VerifyUser call and returns an object containing most of the resulting data.

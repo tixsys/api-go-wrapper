@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/erply/api-go-wrapper/internal/common"
 	"github.com/erply/api-go-wrapper/pkg/api"
@@ -17,19 +18,19 @@ func main() {
 		partnerKey = ""
 	)
 	httpCli := common.GetDefaultHTTPClient()
-	sessionKey, err := auth.VerifyUser(username, password, clientCode, httpCli)
+	ctx := context.Background()
+	session, err := auth.VerifyUserFull(ctx, username, password, clientCode, map[string]string{}, http.DefaultClient)
 	if err != nil {
 		panic(err)
 	}
-
-	sessInfo, err := auth.GetSessionKeyInfo(sessionKey, clientCode, httpCli)
+	sessInfo, err := auth.GetSessionKeyInfo(session.SessionKey, clientCode, httpCli)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(sessInfo)
 
-	info, err := auth.GetSessionKeyUser(sessionKey, clientCode, httpCli)
-	cli, err := api.NewClient(sessionKey, clientCode, nil)
+	info, err := auth.GetSessionKeyUser(session.SessionKey, clientCode, httpCli)
+	cli, err := api.NewClient(session.SessionKey, clientCode, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -42,7 +43,7 @@ func main() {
 
 	fmt.Println(endpoints)
 
-	partnerCli, err := api.NewPartnerClient(sessionKey, clientCode, partnerKey, nil)
+	partnerCli, err := api.NewPartnerClient(session.SessionKey, clientCode, partnerKey, nil)
 	if err != nil {
 		panic(err)
 	}

@@ -20,19 +20,19 @@ func main() {
 
 	flag.Parse()
 	httpCli := common.GetDefaultHTTPClient()
-	sessionKey, err := auth.VerifyUser(*username, *password, *clientCode, httpCli)
+	session, err := auth.VerifyUserFull(context.Background(), *username, *password, *clientCode, map[string]string{}, httpCli)
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = auth.GetSessionKeyUser(sessionKey, *clientCode, httpCli)
+	_, err = auth.GetSessionKeyUser(session.SessionKey, *clientCode, httpCli)
 
 	//this function will receive the request name at every request execution inside the erply api client
 	customHeadersSetter := func(requestName string) url.Values {
 		params := url.Values{}
 		params.Add("setContentType", "1")
 		params.Add("request", requestName)
-		params.Add("sessionKey", sessionKey)
+		params.Add("sessionKey", session.SessionKey)
 		params.Add("clientCode", *clientCode)
 
 		fmt.Println(len(params))
@@ -56,7 +56,7 @@ func main() {
 		params := url.Values{}
 		params.Add("setContentType", "1")
 		params.Add("request", requestName)
-		params.Add("sessionKey", sessionKey)
+		params.Add("sessionKey", session.SessionKey)
 		params.Add("clientCode", *clientCode)
 		params.Add("partnerKey", *partnerKey)
 		fmt.Println(len(params))

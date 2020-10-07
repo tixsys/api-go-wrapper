@@ -17,12 +17,13 @@ func main() {
 	clientCode := flag.String("cc", "", "client code")
 	flag.Parse()
 
-	sessionKey, err := auth.VerifyUser(*username, *password, *clientCode, http.DefaultClient)
+	ctx := context.Background()
+	session, err := auth.VerifyUserFull(ctx, *username, *password, *clientCode, map[string]string{}, http.DefaultClient)
 	if err != nil {
 		panic(err)
 	}
 
-	apiClient, err := api.NewClient(sessionKey, *clientCode, nil)
+	apiClient, err := api.NewClient(session.SessionKey, *clientCode, nil)
 	if err != nil {
 		panic(err)
 	}

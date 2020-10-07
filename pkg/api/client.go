@@ -58,7 +58,7 @@ func NewUnvalidatedClient(sk, cc, partnerKey string, httpCli *http.Client) *Clie
 // clientCode erply customer identification number
 // and a custom http Client if needs to be overwritten. if nil will use default http client provided by the SDK
 //The headersSetToEveryRequest function will be executed on every request and supplied with the request name. There is an example in the /examples of you to use it
-func NewClient(sessionKey string, clientCode string, customCli *http.Client) (*Client, error) {
+func NewClient(sessionKey, clientCode string, customCli *http.Client) (*Client, error) {
 	if sessionKey == "" || clientCode == "" {
 		return nil, errors.New("sessionKey and clientCode are required")
 	}

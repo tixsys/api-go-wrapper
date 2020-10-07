@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"github.com/erply/api-go-wrapper/internal/common"
 	"github.com/stretchr/testify/assert"
@@ -169,13 +170,14 @@ func TestVerifyUser(t *testing.T) {
 		password = ""
 		cc       = ""
 	)
-	sk, err := VerifyUser(username, password, cc, &http.Client{})
+
+	s, err := VerifyUserFull(context.Background(), username, password, cc, map[string]string{}, &http.Client{})
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if sk == "" {
+	if s.SessionKey == "" {
 		t.Error("did not get sk")
 		return
 	}
