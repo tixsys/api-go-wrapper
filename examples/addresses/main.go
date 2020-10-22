@@ -2,46 +2,31 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
+	"github.com/erply/api-go-wrapper/internal/common"
 	"github.com/erply/api-go-wrapper/pkg/api"
-	"github.com/erply/api-go-wrapper/pkg/api/auth"
-	"github.com/erply/api-go-wrapper/pkg/api/common"
-	"net/http"
+	sharedCommon "github.com/erply/api-go-wrapper/pkg/api/common"
 	"time"
 )
 
 func main() {
-	username := flag.String("u", "", "username")
-	password := flag.String("p", "", "password")
-	clientCode := flag.String("cc", "", "client code")
-	flag.Parse()
-
-	ctx := context.Background()
-	session, err := auth.VerifyUserFull(ctx, *username, *password, *clientCode, map[string]string{}, http.DefaultClient)
-	if err != nil {
-		panic(err)
-	}
-
-	apiClient, err := api.NewClient(session.SessionKey, *clientCode, nil)
-	if err != nil {
-		panic(err)
-	}
+	apiClient, err := api.BuildClient()
+	common.Die(err)
 
 	addresses, err := GetAddressesBulk(apiClient)
-	if err != nil {
-		panic(err)
-	}
+	common.Die(err)
 
 	fmt.Printf("%+v\n", addresses)
 
 	err = SaveAddressesBulk(apiClient)
-	if err != nil {
-		panic(err)
-	}
+	common.Die(err)
+
+	DeleteAddress(apiClient)
+
+	DeleteAddressBulk(apiClient)
 }
 
-func GetAddressesBulk(cl *api.Client) (addresses []common.Address, err error) {
+func GetAddressesBulk(cl *api.Client) (addresses []sharedCommon.Address, err error) {
 	addressCli := cl.AddressProvider
 
 	bulkFilters := []map[string]interface{}{
@@ -93,6 +78,42 @@ func SaveAddressesBulk(cl *api.Client) (err error) {
 	}
 
 	fmt.Printf("%+v", bulkResponse)
+
+	return
+}
+
+func DeleteAddress(cl *api.Client) {
+	cli := cl.AddressProvider
+
+	req := map[string]string{
+		"addressID": "6320",
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	err := cli.DeleteAddress(ctx, req)
+	common.Die(err)
+}
+
+func DeleteAddressBulk(cl *api.Client) {
+	addressProvider := cl.AddressProvider
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	addressesToDelete := []map[string]interface{}{
+		{
+			"addressID":     7238,
+		},
+		{
+			"addressID":     7239,
+		},
+	}
+	bulkResponse, err := addressProvider.DeleteAddressBulk(ctx, addressesToDelete, map[string]string{})
+	common.Die(err)
+
+	fmt.Printf("%s", common.ConvertSourceToJsonStrIfPossible(bulkResponse))
 
 	return
 }

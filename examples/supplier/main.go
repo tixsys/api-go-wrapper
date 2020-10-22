@@ -2,48 +2,27 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
+	sharedCommon "github.com/erply/api-go-wrapper/internal/common"
 	"github.com/erply/api-go-wrapper/pkg/api"
-	"github.com/erply/api-go-wrapper/pkg/api/auth"
 	"github.com/erply/api-go-wrapper/pkg/api/customers"
-	"net/http"
 	"time"
 )
 
 func main() {
-	username := flag.String("u", "", "username")
-	password := flag.String("p", "", "password")
-	clientCode := flag.String("cc", "", "client code")
-	flag.Parse()
-
-	ctx := context.Background()
-	session, err := auth.VerifyUserFull(ctx, *username, *password, *clientCode, map[string]string{}, http.DefaultClient)
-	if err != nil {
-		panic(err)
-	}
-
-	apiClient, err := api.NewClient(session.SessionKey, *clientCode, nil)
-	if err != nil {
-		panic(err)
-	}
+	apiClient, err := api.BuildClient()
+	sharedCommon.Die(err)
 
 	suppliers, err := GetSupplierBulk(apiClient)
-	if err != nil {
-		panic(err)
-	}
+	sharedCommon.Die(err)
 
 	fmt.Println(suppliers)
 
 	err = SaveSupplierBulk(apiClient)
-	if err != nil {
-		panic(err)
-	}
+	sharedCommon.Die(err)
 
 	err = DeleteSupplierBulk(apiClient)
-	if err != nil {
-		panic(err)
-	}
+	sharedCommon.Die(err)
 }
 
 func GetSupplierBulk(cl *api.Client) (suppliers []customers.Supplier, err error) {

@@ -2,54 +2,29 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
-	"flag"
 	"fmt"
+	"github.com/erply/api-go-wrapper/internal/common"
 	"github.com/erply/api-go-wrapper/pkg/api"
-	"github.com/erply/api-go-wrapper/pkg/api/auth"
 	sharedCommon "github.com/erply/api-go-wrapper/pkg/api/common"
 	"github.com/erply/api-go-wrapper/pkg/api/customers"
-	"net/http"
 	"time"
 )
 
 func main() {
-	username := flag.String("u", "", "username")
-	password := flag.String("p", "", "password")
-	clientCode := flag.String("cc", "", "client code")
-	flag.Parse()
-
-	connectionTimeout := 60 * time.Second
-	transport := &http.Transport{
-		DisableKeepAlives:     true,
-		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
-		ResponseHeaderTimeout: connectionTimeout,
-	}
-	httpCl := &http.Client{Transport: transport}
-	ctx := context.Background()
-	session, err := auth.VerifyUserFull(ctx, *username, *password, *clientCode, map[string]string{}, http.DefaultClient)
-	if err != nil {
-		panic(err)
-	}
-
-	apiClient, err := api.NewClient(session.SessionKey, *clientCode, httpCl)
-	if err != nil {
-		panic(err)
-	}
+	apiClient, err := api.BuildClient()
+	common.Die(err)
 
 	custmrs, err := GetCustomersBulk(apiClient)
-	if err != nil {
-		panic(err)
-	}
+	common.Die(err)
 
 	fmt.Printf("GetCustomersBulk:\n%+v\n", custmrs)
 
 	customers2, err := GetCustomersInParallel(apiClient)
-	if err != nil {
-		panic(err)
-	}
-
+	common.Die(err)
 	fmt.Printf("GetCustomersInParallel:\n%+v\n", customers2)
+
+	AddCustomerRewardPoints(apiClient)
+	AddCustomerRewardPointsBulk(apiClient)
 }
 
 func GetCustomersBulk(cl *api.Client) (custmrs customers.Customers, err error) {
@@ -114,4 +89,42 @@ func GetCustomersInParallel(cl *api.Client) (customers.Customers, error) {
 	}
 
 	return customrs, nil
+}
+
+func AddCustomerRewardPoints(cl *api.Client) {
+	cli := cl.CustomerManager
+
+	req := map[string]string{
+		"customerID": "12683",
+		"points":     "22",
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	resp, err := cli.AddCustomerRewardPoints(ctx, req)
+	common.Die(err)
+	fmt.Println(common.ConvertSourceToJsonStrIfPossible(resp))
+}
+
+func AddCustomerRewardPointsBulk(cl *api.Client) {
+	cli := cl.CustomerManager
+
+	req := []map[string]interface{}{
+		{
+			"customerID": "12683",
+			"points":     "2",
+		},
+		{
+			"customerID": "12733",
+			"points":     "2",
+		},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	resp, err := cli.AddCustomerRewardPointsBulk(ctx, req, map[string]string{})
+	common.Die(err)
+	fmt.Println(common.ConvertSourceToJsonStrIfPossible(resp))
 }

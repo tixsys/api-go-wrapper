@@ -2,46 +2,30 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
+	"github.com/erply/api-go-wrapper/internal/common"
 	"github.com/erply/api-go-wrapper/pkg/api"
-	"github.com/erply/api-go-wrapper/pkg/api/auth"
 	sharedCommon "github.com/erply/api-go-wrapper/pkg/api/common"
 	"github.com/erply/api-go-wrapper/pkg/api/sales"
-	"net/http"
 	"time"
 )
 
 func main() {
-	username := flag.String("u", "", "username")
-	password := flag.String("p", "", "password")
-	clientCode := flag.String("cc", "", "client code")
-	flag.Parse()
-
-	ctx := context.Background()
-	session, err := auth.VerifyUserFull(ctx, *username, *password, *clientCode, map[string]string{}, http.DefaultClient)
-	if err != nil {
-		panic(err)
-	}
-
-	apiClient, err := api.NewClient(session.SessionKey, *clientCode, nil)
-	if err != nil {
-		panic(err)
-	}
+	apiClient, err := api.BuildClient()
+	common.Die(err)
 
 	saleDocuments, err := GetSalesDocumentsBulk(apiClient)
-	if err != nil {
-		panic(err)
-	}
-
+	common.Die(err)
 	fmt.Printf("GetSalesDocumentsBulk: %+v\n", saleDocuments)
 
 	saleDocumentsInParallel, err := GetSalesDocumentsInParallel(apiClient)
-	if err != nil {
-		panic(err)
-	}
+	common.Die(err)
 
 	fmt.Printf("GetSalesDocumentsInParallel: %+v\n", saleDocumentsInParallel)
+
+	GetPaymentBulk(apiClient)
+
+	GetVatRatesBulk(apiClient)
 }
 
 func GetSalesDocumentsBulk(cl *api.Client) (docs []sales.SaleDocument, err error) {
@@ -113,4 +97,50 @@ func GetSalesDocumentsInParallel(cl *api.Client) ([]sales.SaleDocument, error) {
 
 	<-doneChan
 	return salesDocuments, err
+}
+
+func GetPaymentBulk(cl *api.Client) {
+	salesCLI := cl.SalesManager
+
+	bulkFilters := []map[string]interface{}{
+		{
+			"recordsOnPage": 2,
+			"pageNo":        1,
+		},
+		{
+			"recordsOnPage": 2,
+			"pageNo":        2,
+		},
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	bulkResp, err := salesCLI.GetPaymentsBulk(ctx, bulkFilters, map[string]string{})
+	common.Die(err)
+
+	fmt.Println("GetPaymentsBulk:")
+	fmt.Println(common.ConvertSourceToJsonStrIfPossible(bulkResp))
+}
+
+func GetVatRatesBulk(cl *api.Client) {
+	salesCLI := cl.SalesManager
+
+	bulkFilters := []map[string]interface{}{
+		{
+			"recordsOnPage": 2,
+			"pageNo":        1,
+		},
+		{
+			"recordsOnPage": 2,
+			"pageNo":        2,
+		},
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	bulkResp, err := salesCLI.GetVatRatesBulk(ctx, bulkFilters, map[string]string{})
+	common.Die(err)
+
+	fmt.Println("GetVatRatesBulk:")
+	fmt.Println(common.ConvertSourceToJsonStrIfPossible(bulkResp))
 }
