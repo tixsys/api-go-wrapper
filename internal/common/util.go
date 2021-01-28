@@ -76,6 +76,12 @@ func (cli *Client) SendRequest(ctx context.Context, apiMethod string, filters ma
 	if err != nil {
 		return nil, common.NewFromError(fmt.Sprintf("%v request failed", apiMethod), err, 0)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+
+		return nil, common.NewFromError(fmt.Sprintf("%v request failed with response code: %d", apiMethod, resp.StatusCode), err, 0)
+	}
+
 	log.Log.Log(log.Debug, "got response with code: %d", resp.StatusCode)
 	return resp, nil
 }
@@ -102,7 +108,7 @@ type DestRespWithStatus interface {
 func (cli *Client) Scan(ctx context.Context, apiMethod string, filters map[string]string, dest DestRespWithStatus) error {
 	resp, err := cli.SendRequest(ctx, apiMethod, filters)
 	if err != nil {
-		return common.NewFromError(apiMethod +" request failed", err, 0)
+		return common.NewFromError(apiMethod+" request failed", err, 0)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
@@ -174,6 +180,12 @@ func (cli *Client) SendRequestBulk(ctx context.Context, inputs []BulkInput, filt
 	if err != nil {
 		return nil, common.NewFromError("Bulk request failed", err, 0)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+
+		return nil, common.NewFromError(fmt.Sprintf("bulk request failed with response code: %d", resp.StatusCode), err, 0)
+	}
+
 	log.Log.Log(log.Debug, "got response from Bulk API with status %d", resp.StatusCode)
 	return resp, nil
 }
